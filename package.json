@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "name": "notification-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm run dev --prefix services/api-gateway\" \"npm run dev --prefix services/user-service\"",
+    "docker:up": "docker-compose --env-file .env -f infrastructure/docker/docker-compose.yml up -d",
+    "docker:down": "docker-compose -f infrastructure/docker/docker-compose.yml down"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
