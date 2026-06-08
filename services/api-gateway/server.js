@@ -1,7 +1,24 @@
-require('dotenv');
-const app = require('./src/app.js')
+const env = require('./src/config/env')
+const app = require('./src/app')
+const { connectRabbitMQ } = require('./src/config/rabbitmq')
+const redis = require('./src/config/redis')
 
+const startServer = async () => {
+  try {
+    await connectRabbitMQ()
 
-app.listen(process.env.PORT, () => {
-    console.log(`API Gateway is running on port ${process.env.PORT}`);
-});
+    redis.on('connect', () => {
+      console.log('Redis connected successfully')
+    })
+
+    app.listen(env.port, () => {
+      console.log(`API Gateway is running on port ${env.port}`)
+    })
+
+  } catch (error) {
+    console.error('Failed to start API Gateway:', error.message)
+    process.exit(1)
+  }
+}
+
+startServer()
