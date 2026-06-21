@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"npm run dev --prefix services/api-gateway\" \"npm run dev --prefix services/user-service\"",
+    "dev": "concurrently \"npm run dev --prefix services/api-gateway\" \"npm run dev --prefix services/user-service\" \"npm run dev --prefix services/notification-service\"",
     "docker:up": "docker-compose --env-file .env -f infrastructure/docker/docker-compose.yml up -d",
     "docker:down": "docker-compose -f infrastructure/docker/docker-compose.yml down"
   },

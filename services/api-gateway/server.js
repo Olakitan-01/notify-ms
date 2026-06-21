@@ -1,4 +1,4 @@
-const env = require('./src/config/env')
+const env = require('./src/config/index')
 const app = require('./src/app')
 const { connectRabbitMQ } = require('./src/config/rabbitmq')
 const redis = require('./src/config/redis')

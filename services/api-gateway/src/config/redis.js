@@ -1,5 +1,5 @@
 const Redis = require('ioredis')
-const env = require('./env')
+const env = require('./index')
 
 const redis = new Redis({
   host: env.redis.host,

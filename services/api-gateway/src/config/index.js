@@ -1,4 +1,4 @@
-const { urlencoded } = require("express")
+require('dotenv').config()
 
 const env = {
   port: process.env.PORT || 5002,
@@ -11,13 +11,12 @@ const env = {
   redis: {
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
-
   },
-  rabbmq: {
+  rabbitmq: {
     url: process.env.RABBITMQ_URL,
   },
   services: {
-    user_service_url: process.env.USER_SERVICE_URL,
+    user_service_url: process.env.USER_SERVICE_URL || 'http://localhost:5001',
   }
 }
 

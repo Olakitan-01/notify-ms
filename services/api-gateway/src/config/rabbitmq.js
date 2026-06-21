@@ -1,5 +1,5 @@
 const amqp = require('amqplib')
-const env = require('./env')
+const env = require('./index')
 
 const EXCHANGE = 'notifications.direct'
 
