@@ -3,6 +3,7 @@ const { getChannel, QUEUES } = require('../config/rabbitmq')
 const { sendEmail } = require('../providers/email.provider')
 const { sendPush } = require('../providers/push.provider')
 const { getUserData } = require('../utils/user-client')
+const { updateStatus } = require('../utils/status')
 
 const startConsumers = async () => {
   const channel = getChannel()
@@ -17,8 +18,9 @@ const startConsumers = async () => {
   // Email Consumer
   channel.consume(QUEUES.email, async (msg) => {
     if (msg !== null) {
+      let content
       try {
-        const content = JSON.parse(msg.content.toString())
+        content = JSON.parse(msg.content.toString())
         const { user_id, template_code, variables } = content
         
         logger.info(`Processing email notification for user: ${user_id}`)
@@ -37,11 +39,16 @@ const startConsumers = async () => {
 
         // 3. Send Email
         await sendEmail(user.email, subject, body)
+
+        await updateStatus(content.request_id, 'delivered')
         
         logger.info(`Email sent successfully to ${user.email}`)
         channel.ack(msg)
       } catch (error) {
         logger.error('Error processing email notification:', error.message)
+        if (content?.request_id) {
+          await updateStatus(content.request_id, 'failed', { error: error.message })
+        }
         // Move to failed queue for retries or manual inspection
         channel.nack(msg, false, false)
       }
@@ -51,8 +58,9 @@ const startConsumers = async () => {
   // Push Consumer
   channel.consume(QUEUES.push, async (msg) => {
     if (msg !== null) {
+      let content
       try {
-        const content = JSON.parse(msg.content.toString())
+        content = JSON.parse(msg.content.toString())
         const { user_id, template_code, variables } = content
 
         logger.info(`Processing push notification for user: ${user_id}`)
@@ -70,11 +78,16 @@ const startConsumers = async () => {
         const body = `Hello ${variables.name}, you have a new message.`
         
         await sendPush(user.push_token, title, body)
+
+        await updateStatus(content.request_id, 'delivered')
         
         logger.info(`Push notification sent successfully to token ending in ...${user.push_token.slice(-5)}`)
         channel.ack(msg)
       } catch (error) {
         logger.error('Error processing push notification:', error.message)
+        if (content?.request_id) {
+          await updateStatus(content.request_id, 'failed', { error: error.message })
+        }
         channel.nack(msg, false, false)
       }
     }

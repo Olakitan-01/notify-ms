@@ -1,5 +1,6 @@
 const { getChannel } = require('../config/rabbitmq')
 const { sendResponse } = require('../utils/response')
+const { setNotificationStatus, getNotificationStatus } = require('../services/status.service')
 
 const EXCHANGE = 'notifications.direct'
 
@@ -23,7 +24,7 @@ const sendNotification = async (req, res, next) => {
       timestamp: new Date().toISOString(),
     }
 
-    const routingKey = notification_type // 'email' or 'push'
+    const routingKey = notification_type
 
     channel.publish(
       EXCHANGE,
@@ -32,10 +33,12 @@ const sendNotification = async (req, res, next) => {
       { persistent: true }
     )
 
+    await setNotificationStatus(request_id, 'pending', { notification_type, user_id })
+
     return sendResponse(res, {
       status_code: 202,
       message: 'Notification request accepted and queued',
-      data: { request_id },
+      data: { request_id, status: 'pending' },
     })
 
   } catch (error) {
@@ -43,4 +46,19 @@ const sendNotification = async (req, res, next) => {
   }
 }
 
-module.exports = { sendNotification }
+const checkNotificationStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const status = await getNotificationStatus(id)
+
+    return sendResponse(res, {
+      status_code: 200,
+      message: 'Notification status fetched successfully',
+      data: status,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+module.exports = { sendNotification, checkNotificationStatus }

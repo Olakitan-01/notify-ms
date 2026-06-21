@@ -13,7 +13,12 @@ const env = {
       port: process.env.MAIL_PORT,
       user: process.env.MAIL_USER,
       pass: process.env.MAIL_PASS,
-    }
+    },
+    
+  redis: {
+  host: process.env.REDIS_HOST || 'localhost',
+  port: process.env.REDIS_PORT || 6379,
+},
   },
   push: {
     fcm_server_key: process.env.FCM_SERVER_KEY,
