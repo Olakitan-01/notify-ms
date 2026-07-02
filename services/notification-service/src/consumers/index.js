@@ -93,6 +93,25 @@ const startConsumers = async () => {
     }
   })
 
+  // Failed/Dead Letter Queue Consumer — just logs for now, for visibility
+  channel.consume(QUEUES.failed, async (msg) => {
+    if (msg !== null) {
+      try {
+        const content = JSON.parse(msg.content.toString())
+        logger.warn(`Dead-lettered message received: request_id=${content.request_id}, type=${content.notification_type}, user_id=${content.user_id}`)
+
+        if (content.request_id) {
+          await updateStatus(content.request_id, 'failed', { reason: 'moved to dead letter queue' })
+        }
+
+        channel.ack(msg)
+      } catch (error) {
+        logger.error('Error processing dead-lettered message:', error.message)
+        channel.ack(msg) // ack anyway — nothing more we can do with malformed data
+      }
+    }
+  })
+
   logger.info('Consumers started and listening for messages')
 }
 

@@ -19,10 +19,27 @@ const connectRabbitMQ = async () => {
 
     await channel.assertExchange(EXCHANGE, 'direct', { durable: true })
 
-    // Assert queues
-    for (const queue of Object.values(QUEUES)) {
-      await channel.assertQueue(queue, { durable: true })
-    }
+    await channel.assertQueue(QUEUES.email, {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': EXCHANGE,
+        'x-dead-letter-routing-key': 'failed',
+      },
+    })
+
+    await channel.assertQueue(QUEUES.push, {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': EXCHANGE,
+        'x-dead-letter-routing-key': 'failed',
+      },
+    })
+
+    await channel.assertQueue(QUEUES.failed, { durable: true })
+
+    await channel.bindQueue(QUEUES.email, EXCHANGE, 'email')
+    await channel.bindQueue(QUEUES.push, EXCHANGE, 'push')
+    await channel.bindQueue(QUEUES.failed, EXCHANGE, 'failed')
 
     logger.info('Notification Service: RabbitMQ connected successfully')
 

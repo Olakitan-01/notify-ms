@@ -18,8 +18,22 @@ const connectRabbitMQ = async () => {
 
     await channel.assertExchange(EXCHANGE, 'direct', { durable: true })
 
-    await channel.assertQueue(QUEUES.email, { durable: true })
-    await channel.assertQueue(QUEUES.push, { durable: true })
+    await channel.assertQueue(QUEUES.email, {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': EXCHANGE,
+        'x-dead-letter-routing-key': 'failed',
+      },
+    })
+
+    await channel.assertQueue(QUEUES.push, {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': EXCHANGE,
+        'x-dead-letter-routing-key': 'failed',
+      },
+    })
+
     await channel.assertQueue(QUEUES.failed, { durable: true })
 
     await channel.bindQueue(QUEUES.email, EXCHANGE, 'email')
